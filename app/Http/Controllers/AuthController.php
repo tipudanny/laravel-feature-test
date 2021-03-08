@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,18 @@ class AuthController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api', ['except' => ['login']]);
+        $this->middleware('auth:api', ['except' => ['login','store']]);
+    }
+
+    public function store(Request $request)
+    {
+        $request['password'] = bcrypt($request->password);
+        $user = User::create($request->all());
+        $user->sendEmailVerificationNotification();
+        return response()->json([
+            'user'=> $user,
+            'message' => 'Registration successfully. Please Verify your email address!'
+        ]);
     }
 
     /**
@@ -26,6 +38,7 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
+        //return $request->all();
         $credentials = $request->only('email', 'password');
 
         if ($token = $this->guard()->attempt($credentials)) {
