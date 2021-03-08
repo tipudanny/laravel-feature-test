@@ -30,7 +30,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'd2c93b1f9378af2dbc6e9fbdece1897737c2dc7a',
+    'reference' => 'a4cc1b3581f106de89c1c1713194142ebe50a642',
     'name' => 'laravel/laravel',
   ),
   'versions' => 
@@ -469,7 +469,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'd2c93b1f9378af2dbc6e9fbdece1897737c2dc7a',
+      'reference' => 'a4cc1b3581f106de89c1c1713194142ebe50a642',
     ),
     'laravel/legacy-factories' => 
     array (
@@ -488,6 +488,15 @@ private static $installed = array (
       array (
       ),
       'reference' => '45884b526e10a88a1b179fa1a1a24d5468c668c2',
+    ),
+    'laravel/ui' => 
+    array (
+      'pretty_version' => 'v3.2.0',
+      'version' => '3.2.0.0',
+      'aliases' => 
+      array (
+      ),
+      'reference' => 'a1f82c6283c8373ea1958b8a27c3d5c98cade351',
     ),
     'lcobucci/jwt' => 
     array (

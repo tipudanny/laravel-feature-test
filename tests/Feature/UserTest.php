@@ -25,8 +25,8 @@ class UserTest extends TestCase
         $this->path = 'api/user-create';
 
         $this->data =[
-          'name' => 'Tipu',
-          'email' => 'tipu@gmail.com',
+          'name' => $this->faker->name,
+          'email' => $this->faker->email,
           'password' => bcrypt('password')
         ];
     }
@@ -34,31 +34,50 @@ class UserTest extends TestCase
      *
      * @test
      */
+    public function user_can_login_if_email_verified()
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null
+        ]);
+        $attr = [
+            'email' => $user->email ,
+            'password' => 'password'
+        ];
+        $this->postJson('api/login-verify',$attr)
+            ->assertStatus(401)
+            ->assertJson([
+                'message' => 'you are not verified yet.'
+            ]);
+    }
+
+    /**
+     *
+     * @test
+     */
+    public function user_can_login()
+    {
+        //$this->withoutExceptionHandling();
+        $res = $this->postJson('api/login',[
+            'email'    => $this->user->email,
+            'password' => 'password',
+        ])
+            ->assertStatus(200);
+        $res->dump();
+    }
+    /**
+     *
+     * @test
+     */
     public function only_authenticated_user_can_add_new_user()
     {
-        // check user authentication
-        // create new user
-        // show error
-
-        $path = 'api/user-create';
-        $data = [
-          'name' => 'tipu',
-          //'email' => 'tipu@tedfo.com'
-        ];
-
-        $this->postJson($path,$data)
+        $this->postJson($this->path,$this->data)
             ->assertStatus(401);
 
         $user = User::factory()->create();
         $this->actingAs($user,'api');
-
-        //$this->withoutExceptionHandling();
-        $res = $this->postJson($path,$data)
-            ->assertStatus(422)
-            ->assertJsonValidationErrors([
-                'email' => 'The email field is required.'
-            ]);
-
+        $res = $this->postJson($this->path,$this->data)
+            ->assertStatus(201);
+        $res->dump();
     }
     /**
      *
@@ -70,11 +89,12 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user,'api');
 
-        $this->postJson('api/user-create',$data)
+        $res = $this->postJson('api/user-create',$data)
             ->assertStatus(422)
             ->assertJsonValidationErrors([
                 'name'
             ]);
+        //$res->dump();
     }
 
     /**
@@ -87,11 +107,12 @@ class UserTest extends TestCase
 
         $this->actingAs($this->user,'api');
 
-        $this->postJson($this->path,$this->data)
+        $res = $this->postJson($this->path,$this->data)
             ->assertStatus(422)
             ->assertJsonValidationErrors([
                 'email' => 'The email has already been taken.'
             ]);
+        //$res->dump();
     }
 
     /**
@@ -103,11 +124,28 @@ class UserTest extends TestCase
         User::factory()->count(10)->create();
         $this->actingAs($this->user,'api');
 
-        $this->getJson($this->path)
+        $res = $this->getJson($this->path)
             ->assertStatus(200)
             ->assertJson([
                 'users'=>User::all()->except($this->user->id)->toArray()
             ]);
+        //$res->dump();
+    }
+    /**
+     *
+     * @test
+     */
+    public function only_authenticated_user_can_see_single_user()
+    {
+        $this->withoutExceptionHandling();
+        $this->actingAs($this->user,'api');
+        $res = $this->getJson($this->path.'/'.$this->user->id)
+            ->assertStatus(200)
+            ->assertJson([
+                'user' => User::findOrFail($this->user->id)->value('name')
+            ])
+            ->assertSee($this->user['name']);
+        //$res->dump();
     }
 
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,7 @@ use Illuminate\Support\Facades\Route;
 });*/
 
 Route::post('login', [AuthController::class,'login']);
+Route::post('login-verify',[UserController::class,'login']);
 
 Route::group(['middleware' => 'auth:api'], function () {
 
@@ -27,7 +29,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('refresh', [AuthController::class,'refresh']);
     Route::post('me', [AuthController::class,'me']);
 
-    Route::post('user-create',[\App\Http\Controllers\UserController::class,'store']);
-    Route::get('user-create',[\App\Http\Controllers\UserController::class,'index']);
+    Route::post('user-create',[UserController::class,'store']);
+    Route::get('user-create',[UserController::class,'index']);
+    Route::get('user-create/{id}',[UserController::class,'view']);
 
 });
