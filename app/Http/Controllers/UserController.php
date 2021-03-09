@@ -2,16 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\NotifyUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
     public function login(Request $request)
     {
         $user = User::where('email', $request->get('email'))->first();
-        if ($user != null){
+        if ($user){
             if ($user->hasVerifiedEmail()){
                 return response()->json(['message' => 'success.'],200);
             }
@@ -22,13 +24,19 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        //return $request->all();
-        //return response()->json([],201);
         $validData = $request->validate([
-           'name' => 'required',
-           'email' => 'required|email|unique:users'
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password'=>'required'
         ]);
-        return response()->json($validData,201);
+        $user = User::create($validData);
+        Mail::to($user)
+            ->send( new NotifyUserMail());
+
+        return response()->json([
+            'user'  => $user,
+            'message' =>'The user has been notify'
+        ]);
 
     }
 

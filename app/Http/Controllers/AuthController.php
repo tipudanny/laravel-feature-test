@@ -20,8 +20,13 @@ class AuthController extends Controller
 
     public function store(Request $request)
     {
+        $validData = $request->validate([
+            'name'      => 'required',
+            'email'     => 'required|email|unique:users',
+            'password'  => 'required'
+        ]);
         $request['password'] = bcrypt($request->password);
-        $user = User::create($request->all());
+        $user = User::create($validData);
         $user->sendEmailVerificationNotification();
         return response()->json([
             'user'=> $user,
@@ -38,7 +43,6 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        //return $request->all();
         $credentials = $request->only('email', 'password');
 
         if ($token = $this->guard()->attempt($credentials)) {

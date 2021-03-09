@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 
@@ -29,6 +30,25 @@ class UserTest extends TestCase
           'email' => $this->faker->email,
           'password' => bcrypt('password')
         ];
+    }
+
+    /**
+     *
+     * @test
+     */
+    public function user_get_email_on_registration()
+    {
+        $this->actingAs($this->user,'api');
+        Mail::fake();
+        Mail::assertNothingSent();
+        $this->postJson('api/user-create',$this->data)
+            ->assertOk()
+            ->assertJson([
+                "message"=> "The user has been notify"
+            ]);
+        //Mail::assertSent(NotifyUserMail::class);
+        //$mail = new NotifyUserMail();
+        //dump($mail->email);
     }
     /**
      *
@@ -75,9 +95,8 @@ class UserTest extends TestCase
 
         $user = User::factory()->create();
         $this->actingAs($user,'api');
-        $res = $this->postJson($this->path,$this->data)
+        $this->postJson($this->path,$this->data)
             ->assertStatus(201);
-        $res->dump();
     }
     /**
      *
@@ -89,12 +108,11 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user,'api');
 
-        $res = $this->postJson('api/user-create',$data)
+        $this->postJson('api/user-create',$data)
             ->assertStatus(422)
             ->assertJsonValidationErrors([
                 'name'
             ]);
-        //$res->dump();
     }
 
     /**
@@ -107,12 +125,11 @@ class UserTest extends TestCase
 
         $this->actingAs($this->user,'api');
 
-        $res = $this->postJson($this->path,$this->data)
+        $this->postJson($this->path,$this->data)
             ->assertStatus(422)
             ->assertJsonValidationErrors([
                 'email' => 'The email has already been taken.'
             ]);
-        //$res->dump();
     }
 
     /**
@@ -124,12 +141,11 @@ class UserTest extends TestCase
         User::factory()->count(10)->create();
         $this->actingAs($this->user,'api');
 
-        $res = $this->getJson($this->path)
+        $this->getJson($this->path)
             ->assertStatus(200)
             ->assertJson([
                 'users'=>User::all()->except($this->user->id)->toArray()
             ]);
-        //$res->dump();
     }
     /**
      *
@@ -139,13 +155,12 @@ class UserTest extends TestCase
     {
         $this->withoutExceptionHandling();
         $this->actingAs($this->user,'api');
-        $res = $this->getJson($this->path.'/'.$this->user->id)
+        $this->getJson($this->path.'/'.$this->user->id)
             ->assertStatus(200)
             ->assertJson([
                 'user' => User::findOrFail($this->user->id)->value('name')
             ])
             ->assertSee($this->user['name']);
-        //$res->dump();
     }
 
 }
